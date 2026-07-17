@@ -1,0 +1,46 @@
+included:
+  - Rogers-Marketplace Assignment
+  - Rogers-Marketplace AssignmentTests
+
+excluded:
+  - mock-server
+
+opt_in_rules:
+  - empty_count
+  - closure_spacing
+  - redundant_type_annotation
+  - unneeded_parentheses_in_closure_argument
+
+disabled_rules:
+  - todo
+  # Flags `override class func` as "prefer static" — wrong for URLProtocol
+  # overrides, which are required to stay `class` to match the superclass.
+  - static_over_final_class
+
+line_length:
+  warning: 150
+  error: 220
+
+type_body_length:
+  warning: 350
+  error: 500
+
+file_length:
+  warning: 450
+  error: 600
+
+function_body_length:
+  warning: 80
+  error: 120
+
+cyclomatic_complexity:
+  warning: 12
+  error: 16
+
+identifier_name:
+  min_length: 2
+  excluded:
+    - id
+
+type_name:
+  allowed_symbols: ["_"]

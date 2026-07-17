@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>processing</string>
+		<string>fetch</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>ca.cybermedia.RogersMarketplace.sync</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Marketplace uses your camera so you can photograph an item you're listing for sale.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Marketplace can save photos of items you've listed so you can reuse them later.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Marketplace connects to a local development server on your Mac to fetch and sync listings while testing.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_http._tcp</string>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+</dict>
+</plist>

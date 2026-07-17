@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode.app
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Resolve a simulator destination
+        id: destination
+        run: |
+          DEVICE=$(xcrun simctl list devices available -j \
+            | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for runtime, devices in data['devices'].items():
+    if 'iOS' not in runtime:
+        continue
+    for d in devices:
+        if d['name'].startswith('iPhone'):
+            print(d['udid'])
+            sys.exit(0)
+sys.exit(1)
+")
+          echo "udid=$DEVICE" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -scheme "Rogers-Marketplace Assignment" \
+            -project "Rogers-Marketplace Assignment.xcodeproj" \
+            -destination "platform=iOS Simulator,id=${{ steps.destination.outputs.udid }}"
+
+      - name: Test
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -scheme "Rogers-Marketplace Assignment" \
+            -project "Rogers-Marketplace Assignment.xcodeproj" \
+            -destination "platform=iOS Simulator,id=${{ steps.destination.outputs.udid }}" \
+            -resultBundlePath TestResults.xcresult
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults.xcresult
+
+  lint:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run SwiftLint
+        run: |
+          if ! command -v swiftlint >/dev/null 2>&1; then
+            brew install swiftlint
+          fi
+          swiftlint lint --strict
