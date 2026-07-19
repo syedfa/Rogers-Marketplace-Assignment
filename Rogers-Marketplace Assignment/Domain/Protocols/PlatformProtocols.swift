@@ -5,7 +5,7 @@ import CoreGraphics
 /// real network state.
 protocol ConnectivityMonitoring: Sendable {
     var isConnected: Bool { get async }
-    func statusStream() -> AsyncStream<Bool>
+    func statusStream() async -> AsyncStream<Bool>
 }
 
 /// Abstraction over Keychain access.
@@ -25,6 +25,6 @@ protocol ImageCaching: Sendable {
 /// Publishes sync progress to the UI.
 protocol SyncEngineProtocol: Sendable {
     func syncNow() async
-    func statusStream() -> AsyncStream<SyncStatus>
+    func statusStream() async -> AsyncStream<SyncStatus>
     var currentStatus: SyncStatus { get async }
 }

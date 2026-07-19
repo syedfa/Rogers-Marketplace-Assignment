@@ -5,7 +5,7 @@ import SwiftUI
 /// environment via a plain custom key rather than the `Observable`-only
 /// `View.environment(_:)` overload.
 private struct AppDependenciesKey: EnvironmentKey {
-    @MainActor static let defaultValue = AppDependencies.shared
+    static let defaultValue = AppDependencies.shared
 }
 
 extension EnvironmentValues {

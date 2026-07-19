@@ -54,7 +54,7 @@ actor SyncEngine: SyncEngineProtocol {
             guard let self else { return }
             await self.syncNow()
             var wasConnected = await connectivity.isConnected
-            for await isConnected in connectivity.statusStream() {
+            for await isConnected in await connectivity.statusStream() {
                 if isConnected && !wasConnected {
                     await self.syncNow()
                 }
@@ -63,7 +63,7 @@ actor SyncEngine: SyncEngineProtocol {
         }
     }
 
-    func statusStream() -> AsyncStream<SyncStatus> {
+    func statusStream() async -> AsyncStream<SyncStatus> {
         let id = UUID()
         return AsyncStream { continuation in
             continuation.yield(currentStatus)

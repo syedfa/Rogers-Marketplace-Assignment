@@ -4,17 +4,25 @@ import SwiftData
 /// Composition root. Built once at launch and threaded down via
 /// `.environment`; every concrete `Data` type is constructed here and
 /// exposed to the rest of the app only through `Domain` protocols.
-@MainActor
-final class AppDependencies {
+///
+/// Not `@MainActor`: every stored property is either an actor, a `Sendable`
+/// value type, or an `@unchecked Sendable` class, and all of them are `let`
+/// — assembled once in `init()` and never mutated afterward. That makes
+/// this safe to read from any actor (SwiftUI's environment, `AppDelegate`,
+/// or a background task), which is exactly how it's used.
+final class AppDependencies: @unchecked Sendable {
     /// A single shared instance so `AppDelegate` (which registers the
     /// background task before the SwiftUI `App` scene is built) and the
     /// SwiftUI view hierarchy observe the exact same `SyncEngine`.
     static let shared = AppDependencies()
 
-    static let serverURLDefaultsKey = "marketplace.serverURL"
-    static let mergeStrategyDefaultsKey = "marketplace.mergeStrategy"
-    static let apiTokenKeychainKey = "apiToken"
-    static let defaultServerURLString = "http://localhost:3000"
+    // Plain constants, safe to read from any actor — used inside
+    // `@Sendable` closures that run on the API client's and sync engine's
+    // own actors, not just from MainActor.
+    nonisolated static let serverURLDefaultsKey = "marketplace.serverURL"
+    nonisolated static let mergeStrategyDefaultsKey = "marketplace.mergeStrategy"
+    nonisolated static let apiTokenKeychainKey = "apiToken"
+    nonisolated static let defaultServerURLString = "http://localhost:3000"
 
     let modelContainer: ModelContainer
     let repository: ListingRepository

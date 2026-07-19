@@ -1,22 +1,24 @@
 import Foundation
 import Network
 
-/// Wraps `NWPathMonitor` behind `ConnectivityMonitoring`. The monitor's own
-/// callback queue is a private serial background queue — never the main
-/// thread — per Apple's guidance for `NWPathMonitor`.
-final class ConnectivityMonitor: ConnectivityMonitoring, @unchecked Sendable {
+/// Wraps `NWPathMonitor` behind `ConnectivityMonitoring`. An actor rather
+/// than a class with manual locking — `NWPathMonitor`'s own callback queue
+/// is a private serial background queue (never the main thread, per
+/// Apple's guidance), so updates hop into the actor with a `Task` instead
+/// of a lock.
+actor ConnectivityMonitor: ConnectivityMonitoring {
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "ca.cybermedia.RogersMarketplace.connectivity")
-    private let lock = NSLock()
     private var latestStatus: Bool
     private var continuations: [UUID: AsyncStream<Bool>.Continuation] = [:]
 
     init() {
         latestStatus = monitor.currentPath.status == .satisfied
-        monitor.pathUpdateHandler = { [weak self] path in
-            self?.handleUpdate(isSatisfied: path.status == .satisfied)
-        }
         monitor.start(queue: queue)
+        monitor.pathUpdateHandler = { [weak self] path in
+            let isSatisfied = path.status == .satisfied
+            Task { await self?.handleUpdate(isSatisfied: isSatisfied) }
+        }
     }
 
     deinit {
@@ -24,39 +26,28 @@ final class ConnectivityMonitor: ConnectivityMonitoring, @unchecked Sendable {
     }
 
     var isConnected: Bool {
-        get async {
-            lock.lock()
-            defer { lock.unlock() }
-            return latestStatus
-        }
+        latestStatus
     }
 
     func statusStream() -> AsyncStream<Bool> {
         let id = UUID()
         return AsyncStream { continuation in
-            lock.lock()
             continuation.yield(latestStatus)
             continuations[id] = continuation
-            lock.unlock()
             continuation.onTermination = { [weak self] _ in
-                self?.removeContinuation(id)
+                Task { await self?.removeContinuation(id) }
             }
         }
     }
 
     private func handleUpdate(isSatisfied: Bool) {
-        lock.lock()
         latestStatus = isSatisfied
-        let currentContinuations = continuations
-        lock.unlock()
-        for continuation in currentContinuations.values {
+        for continuation in continuations.values {
             continuation.yield(isSatisfied)
         }
     }
 
     private func removeContinuation(_ id: UUID) {
-        lock.lock()
         continuations.removeValue(forKey: id)
-        lock.unlock()
     }
 }
