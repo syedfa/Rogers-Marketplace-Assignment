@@ -72,7 +72,9 @@ struct ListingGridScreen: View {
                 prompt: "Search Marketplace"
             )
             .navigationDestination(item: $selectedListing) { listing in
-                ListingDetailView(listing: listing)
+                ListingDetailView(listing: listing) { listingID, isFavorite in
+                    viewModel?.applyFavoriteChange(listingID: listingID, isFavorite: isFavorite)
+                }
             }
         }
         .task {

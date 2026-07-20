@@ -41,9 +41,29 @@ final class ListingGridViewModel {
     }
 
     func toggleFavorite(_ listing: Listing) {
+        let newValue = !listing.isFavorite
         Task {
-            try? await repository.setFavorite(id: listing.id, isFavorite: !listing.isFavorite)
-            await reload()
+            do {
+                try await repository.setFavorite(id: listing.id, isFavorite: newValue)
+                applyFavoriteChange(listingID: listing.id, isFavorite: newValue)
+            } catch {
+                // Local-only write failed silently; nothing further to report.
+            }
+        }
+    }
+
+    /// Reflects an already-persisted favorite change in the in-memory list
+    /// immediately, without a full reload. Used both by `toggleFavorite`
+    /// above and by the detail screen, which persists the change itself
+    /// (it can be reached from either the full feed or the favorites-only
+    /// feed) and calls back in here so whichever grid the user returns to
+    /// is correct right away — not just after the next sync-driven reload.
+    func applyFavoriteChange(listingID: String, isFavorite: Bool) {
+        guard let index = listings.firstIndex(where: { $0.id == listingID }) else { return }
+        if favoritesOnly && !isFavorite {
+            listings.remove(at: index)
+        } else {
+            listings[index].isFavorite = isFavorite
         }
     }
 

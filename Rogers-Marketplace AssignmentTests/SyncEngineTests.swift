@@ -9,18 +9,6 @@ struct SyncEngineTests {
         return ListingRepository(modelContainer: container)
     }
 
-    /// `startObservingConnectivity()` reacts to connectivity changes from a
-    /// detached background Task, so tests can't just `await` a single call
-    /// the way they do with `syncNow()` — poll until `condition` is true or
-    /// give up after `timeout`.
-    func waitUntil(timeout: Duration = .seconds(2), _ condition: () async -> Bool) async {
-        let deadline = ContinuousClock.now + timeout
-        while ContinuousClock.now < deadline {
-            if await condition() { return }
-            try? await Task.sleep(for: .milliseconds(10))
-        }
-    }
-
     @Test("syncNow while offline does not contact the API and reports .offline")
     func offlineDoesNotSync() async throws {
         let repo = try makeRepository()

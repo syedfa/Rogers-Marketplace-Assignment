@@ -2,12 +2,17 @@ import SwiftUI
 
 struct ListingDetailView: View {
     let listing: Listing
+    /// Called after the favorite change is persisted, so whichever grid
+    /// screen pushed this view can update its own in-memory list in place
+    /// instead of waiting for its next sync-driven reload.
+    var onFavoriteToggled: ((String, Bool) -> Void)?
 
     @Environment(\.dependencies) private var dependencies
     @State private var isFavorite: Bool
 
-    init(listing: Listing) {
+    init(listing: Listing, onFavoriteToggled: ((String, Bool) -> Void)? = nil) {
         self.listing = listing
+        self.onFavoriteToggled = onFavoriteToggled
         _isFavorite = State(initialValue: listing.isFavorite)
     }
 
@@ -53,7 +58,11 @@ struct ListingDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     isFavorite.toggle()
-                    Task { try? await dependencies.repository.setFavorite(id: listing.id, isFavorite: isFavorite) }
+                    let newValue = isFavorite
+                    Task {
+                        try? await dependencies.repository.setFavorite(id: listing.id, isFavorite: newValue)
+                        onFavoriteToggled?(listing.id, newValue)
+                    }
                 } label: {
                     Image(systemName: isFavorite ? "heart.fill" : "heart")
                 }
