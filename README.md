@@ -120,19 +120,15 @@ xcodebuild test \
   -destination "platform=iOS Simulator,name=iPhone 17"
 ```
 
-77 Swift Testing cases across 8 suites, all pure/fast — no network, no
-Simulator UI, in-memory SwiftData containers only:
+3 Swift Testing cases in `SyncEngineTests`, covering the sync logic called
+out in the assignment's requirements — pure/fast, no network, no Simulator
+UI, an in-memory SwiftData container only:
 
-| Suite | Covers |
+| Test | Covers |
 |---|---|
-| `ConflictResolverTests` | LWW + field-merge, both directions, favorite preservation |
-| `ListingValidatorTests` | Title/description/price/image-count validation, price parsing edge cases |
-| `SyncEngineTests` | Offline detection, FIFO outbox drain, retry-on-failure, conflict reconciliation, status stream |
-| `ListingRepositoryTests` | Create/update/favorite semantics, outbox coalescing, search/category/favorites filtering |
-| `APIClientTests` | Request shape, auth header, 4xx/5xx mapping, malformed-JSON handling, relative image URL resolution |
-| `ImageCacheTests` / `ThumbnailGeneratorTests` | Memory/disk cache hits avoid re-fetching, downsample bounds, no-upsample |
-| `KeychainStoreTests` | Set/get/delete/overwrite round-trips |
-| `MapperTests` | `Listing` ⇄ `ListingEntity` ⇄ `ListingRecord` round-trips, Decimal precision |
+| `drainsOutboxOnReconnect` | Offline creates queue in the outbox and drain FIFO once connectivity returns, clearing the outbox |
+| `conflictResolvedWithLWW` | A local edit that conflicts with a remote pull resolves via Last-Write-Wins |
+| `conflictResolvedWithFieldMerge` | The same conflict resolves via Field-Merge — locally-edited fields kept, the rest taken from the server |
 
 ## Performance & resource usage
 

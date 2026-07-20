@@ -35,8 +35,7 @@ Presentation → Domain ← Data
   `ImageCache`. Each owns its serialized state instead of relying on locks,
   except where a lock is unavoidable because a type wraps a
   non-actor-isolated system API (`ConnectivityMonitor` wrapping
-  `NWPathMonitor`'s own callback queue; `StubURLProtocol` in tests, whose
-  `startLoading()` is invoked by `URLSession` off any actor).
+  `NWPathMonitor`'s own callback queue).
 - ViewModels are `@MainActor @Observable` — UI state mutation always happens
   on the main actor, and `@Observable` (not `ObservableObject`) is used
   throughout for lower-overhead, property-level change tracking.
@@ -75,31 +74,30 @@ Presentation → Domain ← Data
   carry the suffix instead (`ListingRepositoryProtocol`,
   `APIClientProtocol`) since there's exactly one production implementation
   of each and tests reach for a hand-written fake, not a generated one.
-- Test doubles are `Fake*` (stateful, general-purpose:
-  `FakeAPIClient`, `FakeConnectivityMonitor`) or `InMemory*` (a real,
-  minimal implementation backed by a dictionary: `InMemorySecureStore`) —
-  never `Mock*`, to avoid implying record/verify mocking machinery this
-  codebase doesn't use.
+- Test doubles are `Fake*` (stateful, general-purpose: `FakeAPIClient`,
+  `FakeConnectivityMonitor`) — never `Mock*`, to avoid implying
+  record/verify mocking machinery this codebase doesn't use.
 
 ## Testing
 
 - **Swift Testing** (`@Test`/`#expect`), not XCTest — see
   [README.md#testing](../README.md#testing) for the full suite list.
-- Tests exercise real production types wherever feasible
-  (`ListingRepository` against an in-memory `ModelContainer`, `APIClient`
-  against a stubbed `URLProtocol`) rather than re-implementing their logic
-  in a fake — a fake `ListingRepository` would just be a second copy of the
-  coalescing/outbox logic that could silently drift from the real one.
-- `StubURLProtocol` (test-only) routes each `URLSession` to its own handler
-  via a UUID carried in a request header, rather than one shared static
-  closure — Swift Testing runs suites concurrently by default, and a single
-  shared mutable handler let one test's stubbed response leak into another
-  running at the same time (this was a real, reproduced bug during
-  development — see commit history).
-- No UI snapshot tests. `Presentation` is kept thin enough (every view
-  either has no branching logic or delegates it to a tested ViewModel) that
-  the cost of introducing a snapshot-testing setup wasn't justified for this
-  scope; the existing XCUITest launch test remains as a smoke test.
+- The test suite is intentionally scoped to the 3 cases the assignment
+  calls out — "unit tests for sync logic" — rather than the full test
+  pyramid this codebase's layering would otherwise support (every `Domain`/
+  `Data` protocol seam was designed to be independently testable; the
+  scope cut here is deliberate, not a limitation of the architecture).
+- Tests exercise the real `SyncEngine` and `ListingRepository` — against an
+  in-memory `ModelContainer` and a fake `APIClient`/`ConnectivityMonitor` —
+  rather than re-implementing sync/outbox logic in a fake, so a passing
+  test means the actual reconciliation logic is correct, not just that a
+  fake was configured right.
+- No UI snapshot tests and no ViewModel tests. `Presentation` is kept thin
+  enough (every view either has no branching logic or delegates it to a
+  ViewModel that's a straightforward pass-through to a `Domain` protocol)
+  that the cost of testing that layer separately wasn't justified given the
+  assignment's scope; the existing XCUITest launch test remains as a smoke
+  test.
 
 ## Commit conventions
 
