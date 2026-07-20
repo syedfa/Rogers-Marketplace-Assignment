@@ -22,3 +22,6 @@ npm-debug.log*
 
 # Test results
 *.xcresult
+
+# Local-only notes, not meant to be pushed
+docs/WALKTHROUGH.md

@@ -3,7 +3,7 @@ import BackgroundTasks
 
 /// Registers and schedules the `BGProcessingTask` that drains the sync
 /// outbox after the app is backgrounded and connectivity returns. See
-/// sequence diagram 4 in `docs/ARCHITECTURE.md`.
+/// sequence diagram 4 in `docs/SEQUENCE.md`.
 ///
 /// `BGProcessingTask` launches are opportunistic and scheduled by the OS —
 /// they rarely fire on the Simulator. Force one from Xcode's debugger

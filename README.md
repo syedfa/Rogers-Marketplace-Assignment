@@ -12,7 +12,7 @@ SwiftData only; **no third-party libraries**.
 ## Contents
 
 - [Quick start](#quick-start)
-- [Architecture](#architecture) (full diagrams in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md))
+- [Architecture](#architecture) (component diagram in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), sequence diagrams in [docs/SEQUENCE.md](docs/SEQUENCE.md))
 - [Running on a physical device](#running-on-a-physical-device)
 - [Testing](#testing)
 - [Performance & resource usage](#performance--resource-usage)
@@ -57,9 +57,9 @@ Data (SwiftData persistence, URLSession networking, image cache, sync engine)
 ```
 
 See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the full component
-diagram and four sequence diagrams covering: offline create → reconnect →
-sync, cache-first image loading, conflict resolution, and background
-upload.
+diagram, and **[docs/SEQUENCE.md](docs/SEQUENCE.md)** for
+four sequence diagrams covering: offline create → reconnect → sync,
+cache-first image loading, conflict resolution, and background upload.
 
 ### Offline-first sync
 
@@ -186,7 +186,8 @@ each is also called out at its point of use in the code or in
 - **`BGProcessingTask` launches are opportunistic and rarely fire on the
   Simulator.** The background upload path is real (genuine background
   `URLSession`, `uploadTask(fromFile:)`, `BGTaskScheduler` registration —
-  see sequence diagram 4), but exercising it end-to-end needs a physical
+  see sequence diagram 4 in [docs/SEQUENCE.md](docs/SEQUENCE.md)),
+  but exercising it end-to-end needs a physical
   device or the Xcode debugger's task-simulation console command (documented
   inline in `BackgroundTaskCoordinator`). Foreground sync (triggered on
   launch and on every offline→online transition) covers the common path.

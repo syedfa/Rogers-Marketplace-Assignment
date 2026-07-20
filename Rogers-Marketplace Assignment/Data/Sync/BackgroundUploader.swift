@@ -3,7 +3,7 @@ import Foundation
 /// Uploads a single queued outbox change via a background `URLSession`, so
 /// it keeps draining even if the app is suspended while the request is in
 /// flight — the OS relaunches the app in the background to deliver the
-/// completion event. See sequence diagram 4 in `docs/ARCHITECTURE.md`.
+/// completion event. See sequence diagram 4 in `docs/SEQUENCE.md`.
 ///
 /// JSON Server (the mock backend) has no multipart upload endpoint, so each
 /// "upload" is really a plain POST/PUT of the listing JSON — images are
