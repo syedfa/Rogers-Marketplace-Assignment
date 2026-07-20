@@ -59,6 +59,47 @@ final class FakeConnectivityMonitor: ConnectivityMonitoring, @unchecked Sendable
     }
 }
 
+/// Test double for `SyncEngineProtocol` — doesn't perform any real sync
+/// work, just records that it was asked to and reports a settable status.
+/// Used by ViewModel tests that need a `SyncEngineProtocol` but aren't
+/// exercising sync behavior themselves.
+final class FakeSyncEngine: SyncEngineProtocol, @unchecked Sendable {
+    private(set) var syncNowCallCount = 0
+    var currentStatus: SyncStatus = .initial
+
+    func syncNow() async {
+        syncNowCallCount += 1
+    }
+
+    func statusStream() async -> AsyncStream<SyncStatus> {
+        AsyncStream { continuation in
+            continuation.yield(currentStatus)
+            continuation.finish()
+        }
+    }
+}
+
+/// Test double for `SecureStoring`, backed by a plain dictionary.
+final class InMemorySecureStore: SecureStoring, @unchecked Sendable {
+    private var storage: [String: String]
+
+    init(seed: [String: String] = [:]) {
+        storage = seed
+    }
+
+    func set(_ value: String, forKey key: String) throws {
+        storage[key] = value
+    }
+
+    func get(_ key: String) throws -> String? {
+        storage[key]
+    }
+
+    func delete(_ key: String) throws {
+        storage.removeValue(forKey: key)
+    }
+}
+
 enum TestFixtures {
     static func listing(
         id: String = UUID().uuidString,

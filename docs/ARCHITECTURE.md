@@ -11,8 +11,8 @@ outbox-based sync engine reconciling local edits against a mock REST API
   directly — it talks to `Domain` protocols only.
 - **Domain** is pure Swift (models, protocols, validation, conflict
   resolution). No SwiftData, no URLSession, no UIKit/SwiftUI imports. This is
-  what makes `ConflictResolver` (exercised end-to-end in `SyncEngineTests`)
-  fast, deterministic, and free of any framework setup.
+  what makes `ConflictResolverTests` and `ListingValidatorTests` fast,
+  deterministic, and free of any framework setup.
 - **Data** implements the Domain protocols: SwiftData persistence, URLSession
   networking, disk/memory image caching, Keychain, connectivity, and the sync
   engine itself.
