@@ -120,8 +120,21 @@ xcodebuild test \
   -destination "platform=iOS Simulator,name=iPhone 17"
 ```
 
-77 Swift Testing cases across 8 suites, all pure/fast — no network, no
-Simulator UI, in-memory SwiftData containers only:
+83 Swift Testing cases across 10 suites, all pure/fast — no network, no
+Simulator UI, in-memory SwiftData containers only.
+
+Three of them, tagged `.coreRequirement` in `SyncEngineTests.swift`, are
+the ones the assignment specifically calls for ("unit tests for sync
+logic") — the rest exist because the architecture's protocol seams make
+them cheap to write, not because they were required:
+
+- **`drainsOutboxOnReconnect`** — an offline create queues in the outbox
+  and drains FIFO once connectivity returns, clearing the outbox
+- **`conflictResolvedWithLWW`** — a local/remote conflict resolves via
+  Last-Write-Wins
+- **`conflictResolvedWithFieldMerge`** — the same conflict resolves via
+  Field-Merge, keeping locally-edited fields and taking the rest from the
+  server
 
 | Suite | Covers |
 |---|---|
@@ -133,6 +146,7 @@ Simulator UI, in-memory SwiftData containers only:
 | `ImageCacheTests` / `ThumbnailGeneratorTests` | Memory/disk cache hits avoid re-fetching, downsample bounds, no-upsample |
 | `KeychainStoreTests` | Set/get/delete/overwrite round-trips |
 | `MapperTests` | `Listing` ⇄ `ListingEntity` ⇄ `ListingRecord` round-trips, Decimal precision |
+| `ListingGridViewModelTests` | Favorite state patched in place on the grid, immediately, without a full reload |
 
 ## Performance & resource usage
 
